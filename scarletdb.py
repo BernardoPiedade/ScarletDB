@@ -27,9 +27,13 @@ class ScarletDB:
             json.dump(self.databases[db_name], f, indent=2, ensure_ascii=False)
 
     def _delete_db_file(self, db_name):
-        path = self._db_path(db_name)
+        """Apaga toda a pasta da base de dados"""
+        path = os.path.join(DATA_DIR, db_name)
         if os.path.exists(path):
-            os.remove(path)
+            def remover_erro(func, path, exc_info):
+                os.chmod(path, 0o777)
+                func(path)
+            shutil.rmtree(path, onerror=remover_erro)
 
     def _load_databases(self):
         for db_folder in os.listdir(DATA_DIR):
@@ -131,11 +135,56 @@ class ScarletDB:
         return f"{count} linha(s) atualizada(s)."
 
     def d(self, condition):
+
         if self.current_table is None:
             return "Nenhuma tabela selecionada."
         table = self.databases[self.current_db][self.current_table]
+
+        # se vier como string tipo "id=2"
+        if isinstance(condition, str):
+            import re
+            m = re.match(r"(\w+)\s*(=|!=|<|>|<=|>=)\s*(.+)", condition)
+            if not m:
+                return "Condição inválida."
+            k, op, val = m.groups()
+            # tenta converter o valor para int se for número
+            try:
+                val = int(val)
+            except ValueError:
+                val = val.strip("'\"")
+            condition = {k: {"op": op, "val": val}}
+
+        def match(row, condition):
+            for k, cond in condition.items():
+                v = row.get(k)
+                op = cond["op"]
+                val = cond["val"]
+
+                # tenta uniformizar: converte para string se um deles for string
+                if isinstance(v, str) or isinstance(val, str):
+                    v = str(v)
+                    val = str(val)
+
+                if op == "=" and v != val:
+                    return False
+                elif op == "!=" and v == val:
+                    return False
+                elif op == ">" and not (v > val):
+                    return False
+                elif op == "<" and not (v < val):
+                    return False
+                elif op == ">=" and not (v >= val):
+                    return False
+                elif op == "<=" and not (v <= val):
+                    return False
+            return True
+
         before = len(table["rows"])
-        table["rows"] = [row for row in table["rows"] if not all(row.get(k) == v for k, v in condition.items())]
+
+        print("DEBUG rows:", table["rows"])
+        print("DEBUG condition:", condition)
+
+        table["rows"] = [row for row in table["rows"] if not match(row, condition)]
         deleted = before - len(table["rows"])
         if deleted > 0:
             self._save_db(self.current_db)

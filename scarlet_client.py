@@ -26,15 +26,14 @@ i->101,'Laptop','/home/username/docs/laptop_manual.pdf',1200.50
 i->102,'Mouse','/home/username/docs/mouse_manual.pdf',25.99
 
 # ---------------- ATUALIZAÇÃO (UPDATE) ----------------
+# ---------------- Command 'u' is no longer maintained, use command 'e' -----------
 u->id:2->name:'Bernardo Silva'
 u->id:3->cv:'/home/username/docs/carla_new_cv.pdf'
 u->id:101->price:1100
 u->id:102->manual:'/home/username/docs/mouse_new_manual.pdf',price:30.50
 
 # ---------------- DELETE ----------------
-d->id:1
-d->id:2
-d->id:101
+d->id=1
 
 # ---------------- SELEÇÃO (SELECT) ----------------
 select->*
@@ -42,7 +41,9 @@ select->id,name
 select->name,cv
 select->*->id:2
 select->id,name->id:1
-select->name,price->price:>25.99
+select->name,price->price>25.99
+select->*->id>5&age=19
+select->*->age>18||name="John"
 
 # ---------------- EDIÇÃO (EDIT) ----------------
 e->ac->email (add column)
@@ -73,7 +74,7 @@ def main():
 
     print(f"Ligado a {HOST_TO_USE}")
     print("Ligado à ScarletDB CLI (formato: cmd->args)")
-    print("Exemplo: wd->TestDB | wt->Users->id,nome | i->1,'Alice',23 | d->id:2 | -h for help")
+    print("'-h' or 'help' for help")
     while True:
         try:
             user_input = input("\033[93mScarletDB>\033[0m ").strip()

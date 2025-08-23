@@ -11,9 +11,13 @@ def parse_value(val):
 def parse_dict(s):
     conds = {}
     for pair in s.split(","):
-        if ":" not in pair:
+        if ":" in pair:
+            k, v = pair.split(":", 1)
+        elif "=" in pair:
+            k, v = pair.split("=", 1)
+        else:
             continue
-        k, v = pair.split(":", 1)
+
         k = k.strip()
         v = v.strip()
 
@@ -120,8 +124,26 @@ def parse_input(user_input: str):
             else:
                 args.append({})
 
+    # --- SELECT: suporta modo antigo (dict) e novo (string com & / ||) ---
+    if cmd == "select":
+        # cols: obrigatório (ex: "*", "id,nome")
+        cols = parse_list(parts[1]) if len(parts) > 1 and parts[1].strip() else ["*"]
+
+        # terceiro argumento pode ser:
+        # - vazio  → sem condições
+        # - "id:2,idade:>18" (modo antigo: dict)
+        # - "idade>18&nome='Alice' || preco>=10" (modo novo: string)
+        if len(parts) > 2 and parts[2].strip():
+            cond_token = parts[2].strip()
+            if ":" in cond_token:
+                return cmd, [cols, parse_dict(cond_token)]   # modo antigo (dict)
+            else:
+                return cmd, [cols, cond_token]               # modo novo (string)
+        else:
+            return cmd, [cols, {}]                           # sem condições
+
     # mapear comando del → del_ (interno)
     if cmd == "d":
-        return "del_", args
+        return "d", args
 
     return cmd, args
