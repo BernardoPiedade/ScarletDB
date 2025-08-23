@@ -2,7 +2,6 @@ import socket
 import json
 from scarlet_parser import parse_input
 
-HOST = "127.0.0.1"
 PORT = 65432
 
 HELP_TEXT = """
@@ -58,15 +57,21 @@ e->id:102->set:name='Gaming Mouse'
 show
 """
 
-def send_command(command, args=None):
+def send_command(command, args=None, host=None):
+    host = host or "127.0.0.1"  # default se não for passado
     msg = {"cmd": command, "args": args or []}
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
+        s.connect((host, PORT))
         s.sendall(json.dumps(msg).encode("utf-8"))
         data = s.recv(4096)
         return json.loads(data.decode("utf-8"))
 
 def main():
+    default_host = "127.0.0.1"  # ou outro IP que queiras como default
+    host_input = input("\033[93mConnect to (IP do servidor, vazio=default):\033[0m ").strip()
+    HOST_TO_USE = host_input or default_host  # se vazio, usa default
+
+    print(f"Ligado a {HOST_TO_USE}")
     print("Ligado à ScarletDB CLI (formato: cmd->args)")
     print("Exemplo: wd->TestDB | wt->Users->id,nome | i->1,'Alice',23 | d->id:2 | -h for help")
     while True:
@@ -82,7 +87,7 @@ def main():
                 break
 
             cmd, args = parse_input(user_input)
-            response = send_command(cmd, args)
+            response = send_command(cmd, args, host=HOST_TO_USE)
             print(f"\033[93m[{response['status']}]\033[0m {response['msg']}")
 
         except KeyboardInterrupt:

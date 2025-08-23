@@ -2,7 +2,7 @@ import socket
 import json
 from scarletdb import ScarletDB  # importa a classe
 
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
 PORT = 65432
 
 def _match_condition(value, cond):
@@ -41,7 +41,14 @@ def handle_command(db, command):
             return {"status": "error", "msg": f"Comando desconhecido: {cmd}"}
 
         method = getattr(db, cmd)
-        result = method(*args) if args else method()
+        # Descompactar apenas se for lista ou tupla
+        if isinstance(args, (list, tuple)):
+            # Caso args seja [[...], [...], [...]] (ou seja, nested), descompacta 1 nível
+            if len(args) == 1 and isinstance(args[0], (list, tuple)):
+                args = args[0]
+            result = method(*args)
+        else:
+            result = method(args)
         return {"status": "ok", "msg": str(result)}
 
     except Exception as e:
