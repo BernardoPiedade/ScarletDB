@@ -23,7 +23,7 @@ i->1,'Alice','/home/username/docs/alice_cv.pdf'
 i->2,'Bernardo','/home/username/docs/bernardo_cv.pdf'
 i->3,'Carla','/home/username/docs/carla_cv.pdf'
 i->101,'Laptop','/home/username/docs/laptop_manual.pdf',1200.50
-i->102,'Mouse','/home/username/docs/mouse_manual.pdf',25.99
+i->102,'Mouse','/home/username/docs/mouse_manual.pdf',25,99
 
 # ---------------- ATUALIZAÇÃO (UPDATE) ----------------
 # ---- Command 'u' is no longer maintained, use command 'e' ----

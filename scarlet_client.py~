@@ -26,7 +26,7 @@ i->101,'Laptop','/home/username/docs/laptop_manual.pdf',1200.50
 i->102,'Mouse','/home/username/docs/mouse_manual.pdf',25.99
 
 # ---------------- ATUALIZAÇÃO (UPDATE) ----------------
-# ---------------- Command 'u' is no longer maintained, use command 'e' -----------
+# ---- Command 'u' is no longer maintained, use command 'e' ----
 u->id:2->name:'Bernardo Silva'
 u->id:3->cv:'/home/username/docs/carla_new_cv.pdf'
 u->id:101->price:1100
@@ -47,15 +47,13 @@ select->*->age>18||name="John"
 
 # ---------------- EDIÇÃO (EDIT) ----------------
 e->ac->email (add column)
-e->ac->telefone
-e->ac->data_nascimento
 e->id:2->set:name='Bernardo S.' (edit row)
 e->id:3->set:cv='/home/username/docs/carla_updated_cv.pdf'
-e->id:101->set:price=1150
-e->id:102->set:name='Gaming Mouse'
+e->id:101->set:price=1150.50
+e->id:100->set:name='laptop',price=200,99 (edit row (multiple columns))
 
 # ---------------- OUTROS ----------------
-show
+show (show full table)
 """
 
 def send_command(command, args=None, host=None):
