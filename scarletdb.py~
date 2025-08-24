@@ -185,6 +185,10 @@ class ScarletDB:
             return True
 
         before = len(table["rows"])
+
+        print("DEBUG rows:", table["rows"])
+        print("DEBUG condition:", condition)
+
         table["rows"] = [row for row in table["rows"] if not match(row, condition)]
         deleted = before - len(table["rows"])
         if deleted > 0:
