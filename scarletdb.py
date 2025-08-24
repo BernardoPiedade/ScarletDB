@@ -109,14 +109,19 @@ class ScarletDB:
         table = self.databases[self.current_db][self.current_table]
         if len(values) != len(table["columns"]):
             return "Número incorreto de valores."
+    
         row = {}
         for col, typ, val in zip(table["columns"], table["types"], values):
             if typ == "file":
                 row[col] = self._handle_file_value(val)
             elif typ == "int":
                 row[col] = int(val)
+            elif typ == "float":
+                # permite vírgula ou ponto
+                row[col] = float(str(val).replace(",", "."))
             else:
                 row[col] = str(val)
+    
         table["rows"].append(row)
         self._save_db(self.current_db)
         return f"Valores inseridos em '{self.current_table}'."
@@ -258,22 +263,28 @@ class ScarletDB:
 
         # Editar valor → e->id:2->set:age=25
         if args[0] == "row_edit":
-            row_id, col, val = args[1], args[2], args[3]
-            col_type = None
-            if col in table["columns"]:
-                col_type = table["types"][table["columns"].index(col)]
+            row_id = args[1]
+            assignments = args[2]  # agora é dict {col: val, ...}
 
             for row in table["rows"]:
                 if str(row.get("id")) == str(row_id):
-                    if col_type == "file":
-                        row[col] = self._handle_file_value(val)
-                    elif col_type == "int":
-                        row[col] = int(val)
-                    else:
-                        row[col] = str(val)
+                    for col, val in assignments.items():
+                        if col not in table["columns"]:
+                            continue  # ignora colunas inexistentes
+
+                        col_type = table["types"][table["columns"].index(col)]
+                        if col_type == "file":
+                            row[col] = self._handle_file_value(val)
+                        elif col_type == "int":
+                            row[col] = int(val)
+                        elif col_type == "float":
+                            row[col] = float(val)
+                        else:
+                            row[col] = str(val)
 
                     self._save_db(self.current_db)
-                    return f"Linha com id={row_id} atualizada ({col}={val})."
+                    updated_cols = ", ".join(f"{c}={v}" for c, v in assignments.items())
+                    return f"Linha com id={row_id} atualizada ({updated_cols})."
 
             return f"Nenhuma linha encontrada com id={row_id}."
 
