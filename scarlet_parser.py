@@ -113,7 +113,7 @@ def parse_input(user_input: str):
             # separar por vírgula, respeitando valores com vírgulas dentro de aspas
             for pair in re.split(r',(?=(?:[^"\']|"[^"]*"|\'[^\']*\')*$)', assignment_str):
                 if "=" not in pair:
-                continue
+                    continue
                 col, val = pair.split("=", 1)
                 assignments[col.strip()] = parse_value(val.strip())
     
