@@ -3,10 +3,24 @@ import re
 def parse_value(val):
     """Converte strings em tipos Python sempre que possível"""
     val = val.strip()
+    
+    # substituir vírgula por ponto para floats
+    val_num = val.replace(",", ".")
+    
     try:
-        return eval(val)  # tenta converter para int, str, etc.
-    except Exception:
-        return val  # devolve string se não der
+        # tentar converter para int ou float
+        if '.' in val_num:
+            return float(val_num)
+        else:
+            return int(val_num)
+    except ValueError:
+        pass
+    
+    # remover aspas de strings
+    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+        return val[1:-1]
+    
+    return val
 
 def parse_dict(s):
     conds = {}
@@ -93,12 +107,17 @@ def parse_input(user_input: str):
             except ValueError:
                 return cmd, []
 
-            assignment = parts[2][len("set:"):]  # ex: age=25
-            if "=" not in assignment:
-                return cmd, []
-            col, val = assignment.split("=", 1)
-
-            return cmd, ["row_edit", row_id, col.strip(), parse_value(val.strip())]
+            assignment_str = parts[2][len("set:"):]  # ex: "nome='Bernardo',idade=25,preco=24,56"
+    
+            assignments = {}
+            # separar por vírgula, respeitando valores com vírgulas dentro de aspas
+            for pair in re.split(r',(?=(?:[^"\']|"[^"]*"|\'[^\']*\')*$)', assignment_str):
+                if "=" not in pair:
+                continue
+                col, val = pair.split("=", 1)
+                assignments[col.strip()] = parse_value(val.strip())
+    
+            return cmd, ["row_edit", row_id, assignments]
 
         return cmd, []
 
